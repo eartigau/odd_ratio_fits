@@ -68,17 +68,19 @@ def demo_linear_fit_comparison():
     print("Demo 1: Linear Fit Comparison with Outliers")
     print("=" * 60)
     
-    # Generate synthetic data
+    # Generate synthetic data with heteroscedastic errors
+    # (See 'Proper Handling of Heteroscedastic Uncertainties' section)
     n_points = 1000
     true_a, true_b = 2.0, 0.5  # True intercept and slope
-    noise_level = 0.5
     
     x = np.linspace(0, 10, n_points)
     y_true = true_a + true_b * x
-    y = y_true + np.random.normal(0, noise_level, n_points)
-    yerr = np.ones(n_points) * noise_level
     
-    # Add outliers: uniform between -15σ and +15σ (includes ~3σ transition region)
+    # Heteroscedastic errors: varying from 0.3 to 1.5
+    yerr = 0.3 + 1.2 * np.random.random(n_points)
+    y = y_true + np.random.normal(0, 1, n_points) * yerr
+    
+    # Add outliers: uniform between -15σ and +15σ (some overlap with main distribution)
     n_outliers = 20
     outlier_idx = np.random.choice(n_points, n_outliers, replace=False)
     y[outlier_idx] = y[outlier_idx] + yerr[outlier_idx] * np.random.uniform(-15, 15, n_outliers)
@@ -176,10 +178,10 @@ def demo_weighted_mean():
         values = np.random.normal(true_value, noise_level, n_points)
         errors = np.ones(n_points) * noise_level
         
-        # Add outliers
+        # Add outliers: uniform between -15σ and +15σ (some overlap with main distribution)
         n_outliers = int(outlier_fraction * n_points)
         outlier_idx = np.random.choice(n_points, n_outliers, replace=False)
-        values[outlier_idx] += np.random.choice([-1, 1], n_outliers) * np.random.uniform(10, 30, n_outliers)
+        values[outlier_idx] += errors[outlier_idx] * np.random.uniform(-15, 15, n_outliers)
         
         # Robust mean
         rob_mean, rob_err = orf.mean(values, errors)
@@ -701,10 +703,10 @@ def demo_heteroscedastic():
     for idx, sigma in zip(outlier_indices, sigma_levels):
         print(f"  {sigma}σ outlier: weight = {weights[idx]:.4f}")
     
-    # Create figure
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    # Create figure - vertical layout
+    fig, axes = plt.subplots(2, 1, figsize=(10, 10))
     
-    # Left panel: Data with outliers
+    # Top panel: Data with outliers
     ax = axes[0]
     
     # Color by weight
@@ -739,7 +741,7 @@ def demo_heteroscedastic():
     cbar = plt.colorbar(sm, ax=ax, shrink=0.8)
     cbar.set_label('Weight')
     
-    # Right panel: sigma deviation vs weight
+    # Bottom panel: sigma deviation vs weight
     ax = axes[1]
     ax.scatter(np.abs(sigma_dev), weights, c=weights, cmap='RdYlGn', 
                s=80, edgecolors='black', linewidth=0.5, vmin=0, vmax=1)

@@ -132,10 +132,10 @@ print(f"Robust mean: {mean:.2f} ± {err:.2f}")  # ~10.0, ignoring outliers
 
 | Method    | Scatter | Abs Bias | Scatter/Error Ratio |
 |-----------|---------|----------|---------------------|
-| **ORF**   | 0.010   | 0.001    | **0.97** ✓          |
-| Naive     | 0.065   | 0.005    | **6.5** ✗           |
+| **ORF**   | 0.011   | 0.0004   | **1.06** ✓          |
+| Naive     | 0.030   | 0.001    | **3.0** ✗           |
 
-The ORF method achieves the theoretical σ/√N uncertainty even with 10% outliers, while naive weighted mean has ~6× larger scatter and underestimates uncertainty by the same factor.
+The ORF method achieves the theoretical σ/√N uncertainty even with 10% outliers (uniformly distributed between ±15σ, some overlapping with the main distribution), while naive weighted mean has ~3× larger scatter and underestimates uncertainty by the same factor.
 
 ![Weighted Mean Comparison](plots/weighted_mean_comparison.png)
 
@@ -165,9 +165,10 @@ print(f"Slope: {b:.3f} ± {b_err:.3f}")
 ### Comparison with Standard Fit
 
 **Simulation setup:**
-- 1,000 points following y = 2 + 0.5x with Gaussian noise (σ = 0.5)
-- 20 outliers (2%) with deviations uniformly distributed between ±3σ and ±15σ
-- Comparison: standard weighted least squares vs. odd ratio fit
+- 1,000 points following y = 2 + 0.5x
+- **Heteroscedastic errors**: σ varies from 0.3 to 1.5 (see [Heteroscedastic Uncertainties](#-proper-handling-of-heteroscedastic-uncertainties))
+- 20 outliers (2%) with deviations uniformly distributed between ±15σ (some overlap with main distribution)
+- Red points: w < 0.5 (identified as likely outliers)
 
 The robust fit (blue) correctly recovers the true line (dashed black) despite outliers, while standard weighted least squares (orange) is biased. Points near ~3σ show the smooth transition in weights.
 
