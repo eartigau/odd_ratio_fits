@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """
-Demo script for odd_ratio_linfit.
+Demo script for odd_ratio_fits.
 
-This script demonstrates the robust linear fitting capabilities of the
-odd_ratio_linfit package, comparing it with standard weighted least squares
+This script demonstrates the robust fitting capabilities of the
+odd_ratio_fits package, comparing it with standard weighted least squares
 fitting in the presence of outliers.
 
 Run this script to generate the demonstration plots:
@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 # Import our package
-from odd_ratio_linfit import odd_ratio_linfit, odd_ratio_mean, odd_ratio_polyfit
+import odd_ratio_fits as orf
 
 # Create plots directory
 PLOT_DIR = Path(__file__).parent / "plots"
@@ -87,7 +87,7 @@ def demo_linear_fit_comparison():
     a_std, a_std_err, b_std, b_std_err = standard_weighted_linfit(x, y, yerr)
     
     # Robust fit
-    a_rob, a_rob_err, b_rob, b_rob_err, weights = odd_ratio_linfit(
+    a_rob, a_rob_err, b_rob, b_rob_err, weights = orf.linear(
         x, y, yerr, return_weights=True
     )
     
@@ -145,7 +145,7 @@ def demo_linear_fit_comparison():
 
 def demo_weighted_mean():
     """
-    Demonstrate the odd_ratio_mean function for robust averaging.
+    Demonstrate the orf.mean function for robust averaging.
     """
     print("\n" + "=" * 60)
     print("Demo 2: Robust Weighted Mean")
@@ -170,7 +170,7 @@ def demo_weighted_mean():
     std_err = np.sqrt(1.0 / np.sum(w))
     
     # Robust mean
-    rob_mean, rob_err = odd_ratio_mean(values, errors)
+    rob_mean, rob_err = orf.mean(values, errors)
     
     # Simple median for comparison
     median_val = np.median(values)
@@ -264,7 +264,7 @@ def demo_varying_outlier_fraction():
                 y[outlier_idx] += np.random.choice([-1, 1], n_outliers) * np.random.uniform(5, 15, n_outliers)
             
             a_std, _, b_std, _ = standard_weighted_linfit(x, y, yerr)
-            a_rob, _, b_rob, _ = odd_ratio_linfit(x, y, yerr)[:4]
+            a_rob, _, b_rob, _ = orf.linear(x, y, yerr)[:4]
             
             trial_std_a.append(a_std - true_a)
             trial_std_b.append(b_std - true_b)
@@ -337,7 +337,7 @@ def demo_odd_ratio_sensitivity():
     for i, odd_ratio in enumerate(odd_ratios):
         ax = axes[i]
         
-        a, a_err, b, b_err, weights = odd_ratio_linfit(
+        a, a_err, b, b_err, weights = orf.linear(
             x, y, yerr, odd_ratio=odd_ratio, return_weights=True
         )
         
@@ -397,7 +397,7 @@ def demo_polynomial_fit():
     std_coeffs = np.polyfit(x, y, 2, w=1/yerr)
     
     # Robust polynomial fit
-    rob_coeffs, rob_coeffs_err, weights = odd_ratio_polyfit(
+    rob_coeffs, rob_coeffs_err, weights = orf.polyfit(
         x, y, yerr, degree=2, return_weights=True
     )
     
@@ -590,7 +590,7 @@ def demo_heteroscedastic():
     y[outlier_large_err_idx] = y_true[outlier_large_err_idx] + absolute_deviation  # ~1.5 sigma
     
     # Fit with robust method
-    a_rob, a_rob_err, b_rob, b_rob_err, weights = odd_ratio_linfit(
+    a_rob, a_rob_err, b_rob, b_rob_err, weights = orf.linear(
         x, y, yerr, return_weights=True
     )
     
@@ -721,7 +721,7 @@ def demo_uncertainty_validation():
             y[outlier_idx] += np.random.choice([-1, 1], n_outliers) * np.random.uniform(5, 15, n_outliers)
         
         # Fit
-        a, a_err, b, b_err = odd_ratio_linfit(x, y, yerr)[:4]
+        a, a_err, b, b_err = orf.linear(x, y, yerr)[:4]
         
         a_values.append(a)
         b_values.append(b)

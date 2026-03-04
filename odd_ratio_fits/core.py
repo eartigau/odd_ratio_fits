@@ -10,7 +10,7 @@ import numpy as np
 from typing import Tuple, Optional
 
 
-def odd_ratio_mean(value: np.ndarray, error: np.ndarray,
+def mean(value: np.ndarray, error: np.ndarray,
                    odd_ratio: float = 2e-4, nmax: int = 10,
                    conv_cut: float = 1e-2) -> Tuple[float, float]:
     """
@@ -125,7 +125,7 @@ def odd_ratio_mean(value: np.ndarray, error: np.ndarray,
     return guess, bulk_error
 
 
-def odd_ratio_linfit(x: np.ndarray, y: np.ndarray, yerr: np.ndarray,
+def linear(x: np.ndarray, y: np.ndarray, yerr: np.ndarray,
                      odd_ratio: float = 2e-4, nmax: int = 10,
                      conv_cut: float = 1e-2,
                      return_weights: bool = False
@@ -320,7 +320,7 @@ def odd_ratio_linfit(x: np.ndarray, y: np.ndarray, yerr: np.ndarray,
     return a, a_err, b, b_err
 
 
-def odd_ratio_polyfit(x: np.ndarray, y: np.ndarray, yerr: np.ndarray,
+def polyfit(x: np.ndarray, y: np.ndarray, yerr: np.ndarray,
                       degree: int = 1, odd_ratio: float = 2e-4,
                       nmax: int = 10, conv_cut: float = 1e-2,
                       return_weights: bool = False):

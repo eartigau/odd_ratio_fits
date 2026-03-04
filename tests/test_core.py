@@ -1,14 +1,14 @@
 """
-Tests for odd_ratio_linfit package.
+Tests for odd_ratio_fits package.
 """
 
 import numpy as np
 import pytest
-from odd_ratio_linfit import odd_ratio_linfit, odd_ratio_mean, odd_ratio_polyfit
+import odd_ratio_fits as orf
 
 
-class TestOddRatioMean:
-    """Tests for odd_ratio_mean function."""
+class TestMean:
+    """Tests for orf.mean function."""
 
     def test_basic_mean_no_outliers(self):
         """Test that mean is correct for clean data."""
@@ -17,7 +17,7 @@ class TestOddRatioMean:
         values = np.random.normal(true_value, 1.0, 100)
         errors = np.ones(100)
         
-        mean, err = odd_ratio_mean(values, errors)
+        mean, err = orf.mean(values, errors)
         
         assert np.abs(mean - true_value) < 0.5
         assert err > 0
@@ -33,7 +33,7 @@ class TestOddRatioMean:
         # Add strong outliers
         values[:10] = [50, -30, 100, -50, 80, -40, 60, -20, 70, -60]
         
-        mean, err = odd_ratio_mean(values, errors)
+        mean, err = orf.mean(values, errors)
         
         # Should still be close to true value
         assert np.abs(mean - true_value) < 1.0
@@ -47,7 +47,7 @@ class TestOddRatioMean:
         # Insert some NaNs
         values[::10] = np.nan
         
-        mean, err = odd_ratio_mean(values, errors)
+        mean, err = orf.mean(values, errors)
         
         assert np.isfinite(mean)
         assert np.isfinite(err)
@@ -58,14 +58,14 @@ class TestOddRatioMean:
         values = np.array([np.nan, np.nan, np.nan])
         errors = np.array([0.1, 0.1, 0.1])
         
-        mean, err = odd_ratio_mean(values, errors)
+        mean, err = orf.mean(values, errors)
         
         assert np.isnan(mean)
         assert np.isnan(err)
 
 
-class TestOddRatioLinfit:
-    """Tests for odd_ratio_linfit function."""
+class TestLinear:
+    """Tests for orf.linear function."""
 
     def test_basic_linear_fit(self):
         """Test basic linear fit without outliers."""
@@ -75,7 +75,7 @@ class TestOddRatioLinfit:
         y = true_a + true_b * x + np.random.normal(0, 0.5, len(x))
         yerr = np.ones(len(x)) * 0.5
         
-        a, a_err, b, b_err = odd_ratio_linfit(x, y, yerr)[:4]
+        a, a_err, b, b_err = orf.linear(x, y, yerr)[:4]
         
         assert np.abs(a - true_a) < 3 * a_err
         assert np.abs(b - true_b) < 3 * b_err
@@ -93,7 +93,7 @@ class TestOddRatioLinfit:
         y[15] = -10.0
         y[25] = 15.0
         
-        a, a_err, b, b_err = odd_ratio_linfit(x, y, yerr)[:4]
+        a, a_err, b, b_err = orf.linear(x, y, yerr)[:4]
         
         # Should still be close to true values
         assert np.abs(a - true_a) < 0.5
@@ -105,7 +105,7 @@ class TestOddRatioLinfit:
         y = 2.0 + 0.5 * x
         yerr = np.ones(len(x)) * 0.5
         
-        result = odd_ratio_linfit(x, y, yerr, return_weights=True)
+        result = orf.linear(x, y, yerr, return_weights=True)
         
         assert len(result) == 5
         weights = result[4]
@@ -124,7 +124,7 @@ class TestOddRatioLinfit:
         outlier_idx = 25
         y[outlier_idx] = 50.0
         
-        _, _, _, _, weights = odd_ratio_linfit(x, y, yerr, return_weights=True)
+        _, _, _, _, weights = orf.linear(x, y, yerr, return_weights=True)
         
         # Outlier should have low weight
         assert weights[outlier_idx] < 0.1
@@ -139,27 +139,27 @@ class TestOddRatioLinfit:
         y = np.array([2, 4, np.nan, 8, 10, 12, 14, 16])
         yerr = np.ones(len(x)) * 0.5
         
-        a, a_err, b, b_err = odd_ratio_linfit(x, y, yerr)[:4]
+        a, a_err, b, b_err = orf.linear(x, y, yerr)[:4]
         
         assert np.isfinite(a)
         assert np.isfinite(b)
 
 
-class TestOddRatioPolyfit:
-    """Tests for odd_ratio_polyfit function."""
+class TestPolyfit:
+    """Tests for orf.polyfit function."""
 
     def test_linear_polyfit(self):
-        """Test polynomial fit with degree=1 matches linfit."""
+        """Test polynomial fit with degree=1 matches linear."""
         np.random.seed(42)
         x = np.linspace(0, 10, 50)
         y = 2.0 + 0.5 * x + np.random.normal(0, 0.5, len(x))
         yerr = np.ones(len(x)) * 0.5
         
         # Linear fit
-        a, a_err, b, b_err = odd_ratio_linfit(x, y, yerr)[:4]
+        a, a_err, b, b_err = orf.linear(x, y, yerr)[:4]
         
         # Polynomial fit degree 1
-        coeffs, coeffs_err = odd_ratio_polyfit(x, y, yerr, degree=1)[:2]
+        coeffs, coeffs_err = orf.polyfit(x, y, yerr, degree=1)[:2]
         
         # Should match (coeffs is [b, a] in polyfit convention)
         assert np.abs(coeffs[0] - b) < 0.01
@@ -173,7 +173,7 @@ class TestOddRatioPolyfit:
         y = np.polyval(true_coeffs, x) + np.random.normal(0, 0.5, len(x))
         yerr = np.ones(len(x)) * 0.5
         
-        coeffs, coeffs_err = odd_ratio_polyfit(x, y, yerr, degree=2)[:2]
+        coeffs, coeffs_err = orf.polyfit(x, y, yerr, degree=2)[:2]
         
         assert np.abs(coeffs[0] - true_coeffs[0]) < 0.05
         assert np.abs(coeffs[1] - true_coeffs[1]) < 0.2
@@ -183,13 +183,13 @@ class TestOddRatioPolyfit:
 class TestEdgeCases:
     """Tests for edge cases and error handling."""
 
-    def test_insufficient_points_linfit(self):
-        """Test linfit with too few points."""
+    def test_insufficient_points_linear(self):
+        """Test linear with too few points."""
         x = np.array([1.0])
         y = np.array([2.0])
         yerr = np.array([0.1])
         
-        a, a_err, b, b_err = odd_ratio_linfit(x, y, yerr)[:4]
+        a, a_err, b, b_err = orf.linear(x, y, yerr)[:4]
         
         assert np.isnan(a)
         assert np.isnan(b)
@@ -201,7 +201,7 @@ class TestEdgeCases:
         yerr = np.array([0.1, 0.0, 0.1, 0.1, 0.1])  # One zero error
         
         # Should not crash (zero errors become inf weights, but algorithm handles it)
-        a, a_err, b, b_err = odd_ratio_linfit(x, y, yerr)[:4]
+        a, a_err, b, b_err = orf.linear(x, y, yerr)[:4]
         
         # Check that we get some result
         assert np.isfinite(a) or np.isnan(a)
@@ -215,12 +215,12 @@ class TestEdgeCases:
         y[25] = 20.0  # Add outlier
         
         # Very small odd_ratio (conservative)
-        _, _, _, _, weights_small = odd_ratio_linfit(
+        _, _, _, _, weights_small = orf.linear(
             x, y, yerr, odd_ratio=1e-6, return_weights=True
         )
         
         # Large odd_ratio (aggressive)
-        _, _, _, _, weights_large = odd_ratio_linfit(
+        _, _, _, _, weights_large = orf.linear(
             x, y, yerr, odd_ratio=0.1, return_weights=True
         )
         

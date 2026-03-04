@@ -22,8 +22,8 @@ This package implements robust fitting algorithms based on the odd ratio weighte
 
 Clone and install from source:
 ```bash
-git clone https://github.com/eartigau/odd_ratio_linfit.git
-cd odd_ratio_linfit
+git clone https://github.com/eartigau/odd_ratio_fits.git
+cd odd_ratio_fits
 pip install -e .
 ```
 
@@ -33,13 +33,13 @@ pip install -e .
 
 ```python
 import numpy as np
-from odd_ratio_linfit import odd_ratio_mean
+import odd_ratio_fits as orf
 
 # Data with outliers
 values = np.array([10.1, 9.8, 10.2, 50.0, 10.0, -20.0, 9.9, 10.3])
 errors = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
 
-mean, err = odd_ratio_mean(values, errors)
+mean, err = orf.mean(values, errors)
 print(f"Robust mean: {mean:.2f} ± {err:.2f}")  # ~10.0, ignoring 50 and -20
 ```
 
@@ -47,7 +47,7 @@ print(f"Robust mean: {mean:.2f} ± {err:.2f}")  # ~10.0, ignoring 50 and -20
 
 ```python
 import numpy as np
-from odd_ratio_linfit import odd_ratio_linfit
+import odd_ratio_fits as orf
 
 # Generate data with outliers
 x = np.linspace(0, 10, 50)
@@ -55,7 +55,7 @@ y = 2.0 + 0.5 * x + np.random.normal(0, 0.5, len(x))
 yerr = np.ones(len(x)) * 0.5
 y[5], y[15], y[25] = 15.0, -5.0, 12.0  # Add outliers
 
-a, a_err, b, b_err = odd_ratio_linfit(x, y, yerr)[:4]
+a, a_err, b, b_err = orf.linear(x, y, yerr)[:4]
 print(f"Intercept: {a:.3f} ± {a_err:.3f}")
 print(f"Slope: {b:.3f} ± {b_err:.3f}")
 ```
@@ -110,14 +110,14 @@ The foundation of this package is the **robust weighted mean**, which computes a
 ### Usage
 
 ```python
-from odd_ratio_linfit import odd_ratio_mean
+import odd_ratio_fits as orf
 import numpy as np
 
 # Values with outliers
 values = np.array([10.1, 9.8, 10.2, 50.0, 10.0, -20.0, 9.9])
 errors = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
 
-mean, err = odd_ratio_mean(values, errors)
+mean, err = orf.mean(values, errors)
 print(f"Robust mean: {mean:.2f} ± {err:.2f}")  # ~10.0, ignoring outliers
 ```
 
@@ -138,19 +138,19 @@ The odd ratio method provides an accurate estimate of the mean even with 10% out
 
 ## Robust Linear Fit
 
-Extending the weighted mean concept to linear regression, `odd_ratio_linfit` performs $y = a + bx$ fits that are robust to outliers.
+Extending the weighted mean concept to linear regression, `orf.linear` performs $y = a + bx$ fits that are robust to outliers.
 
 ### Usage
 
 ```python
-from odd_ratio_linfit import odd_ratio_linfit
+import odd_ratio_fits as orf
 import numpy as np
 
 x = np.linspace(0, 10, 50)
 y = 2.0 + 0.5 * x + np.random.normal(0, 0.5, len(x))
 yerr = np.ones(len(x)) * 0.5
 
-a, a_err, b, b_err = odd_ratio_linfit(x, y, yerr)[:4]
+a, a_err, b, b_err = orf.linear(x, y, yerr)[:4]
 print(f"Intercept: {a:.3f} ± {a_err:.3f}")
 print(f"Slope: {b:.3f} ± {b_err:.3f}")
 ```
@@ -212,12 +212,12 @@ The algorithm typically converges within 3-5 iterations:
 
 ## Higher-Order Polynomial Fits
 
-The method extends to polynomial regression via `odd_ratio_polyfit`. The same iterative weighting scheme applies.
+The method extends to polynomial regression via `orf.polyfit`. The same iterative weighting scheme applies.
 
 ### Usage
 
 ```python
-from odd_ratio_linfit import odd_ratio_polyfit
+import odd_ratio_fits as orf
 import numpy as np
 
 x = np.linspace(0, 10, 80)
@@ -225,7 +225,7 @@ y = 0.05*x**2 - 0.5*x + 3 + np.random.normal(0, 0.5, len(x))
 yerr = np.ones(len(x)) * 0.5
 
 # Quadratic fit: y = a0 + a1*x + a2*x^2
-coeffs, coeffs_err = odd_ratio_polyfit(x, y, yerr, degree=2)[:2]
+coeffs, coeffs_err = orf.polyfit(x, y, yerr, degree=2)[:2]
 print(f"Coefficients [a2, a1, a0]: {coeffs}")
 ```
 
@@ -277,7 +277,7 @@ The left panel shows data with varying error bar sizes. The point with small err
 
 ## 📈 Statistically Valid Uncertainties
 
-The uncertainties returned by `odd_ratio_linfit` are **statistically meaningful** and properly calibrated. This is verified through Monte Carlo simulations.
+The uncertainties returned by `orf.linear` are **statistically meaningful** and properly calibrated. This is verified through Monte Carlo simulations.
 
 ### Monte Carlo Validation
 
@@ -303,16 +303,16 @@ The ratio of actual scatter to mean reported error is ~1.0 for both intercept an
 
 ### What This Means for Your Analysis
 
-When `odd_ratio_linfit` returns `a = 2.05 ± 0.15`, you can trust that:
+When `orf.linear` returns `a = 2.05 ± 0.15`, you can trust that:
 - The true value has ~68% probability of being within [1.90, 2.20]
 - The uncertainty accounts for the down-weighting of outliers
 
 ## 📚 API Reference
 
-### `odd_ratio_linfit`
+### `orf.linear`
 
 ```python
-odd_ratio_linfit(x, y, yerr, odd_ratio=2e-4, nmax=10, conv_cut=1e-2, return_weights=False)
+orf.linear(x, y, yerr, odd_ratio=2e-4, nmax=10, conv_cut=1e-2, return_weights=False)
 ```
 
 Perform robust linear regression $y = a + bx$.
@@ -331,10 +331,10 @@ Perform robust linear regression $y = a + bx$.
 - `b, b_err`: Slope and uncertainty
 - `weights` (optional): Probability each point is valid
 
-### `odd_ratio_mean`
+### `orf.mean`
 
 ```python
-odd_ratio_mean(value, error, odd_ratio=2e-4, nmax=10, conv_cut=1e-2)
+orf.mean(value, error, odd_ratio=2e-4, nmax=10, conv_cut=1e-2)
 ```
 
 Compute robust weighted mean.
@@ -350,10 +350,10 @@ Compute robust weighted mean.
 - `mean`: Robust weighted mean
 - `error`: Uncertainty on the mean
 
-### `odd_ratio_polyfit`
+### `orf.polyfit`
 
 ```python
-odd_ratio_polyfit(x, y, yerr, degree=2, odd_ratio=2e-4, nmax=10, conv_cut=1e-2, return_weights=False)
+orf.polyfit(x, y, yerr, degree=2, odd_ratio=2e-4, nmax=10, conv_cut=1e-2, return_weights=False)
 ```
 
 Perform robust polynomial regression.
@@ -391,12 +391,12 @@ If you use this software in your research, please cite both the code and the ori
 
 **Software:**
 ```bibtex
-@software{odd_ratio_linfit,
+@software{odd_ratio_fits,
   author       = {Artigau, {\'E}tienne and Cook, Neil J. and Cadieux, Charles and
                   Stefanov, Atanas K. and Doyon, Ren{\'e}},
-  title        = {odd\_ratio\_linfit: Robust fitting with mixture model weighting},
+  title        = {odd\_ratio\_fits: Robust fitting with mixture model weighting},
   year         = 2026,
-  url          = {https://github.com/eartigau/odd_ratio_linfit}
+  url          = {https://github.com/eartigau/odd_ratio_fits}
 }
 ```
 
