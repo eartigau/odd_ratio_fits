@@ -340,8 +340,8 @@ def demo_varying_outlier_fraction():
         rob_bias_a.append(np.std(trial_rob_a))
         rob_bias_b.append(np.std(trial_rob_b))
     
-    # Create figure
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    # Create figure - vertical layout
+    fig, axes = plt.subplots(2, 1, figsize=(10, 10))
     
     ax = axes[0]
     ax.plot(outlier_fractions * 100, std_bias_a, 'o-', color='#F28123', 
@@ -395,7 +395,7 @@ def demo_odd_ratio_sensitivity():
     
     odd_ratios = [1e-6, 1e-5, 1e-4, 2e-4, 1e-3, 1e-2, 1e-1]
     
-    fig, axes = plt.subplots(2, 4, figsize=(16, 8))
+    fig, axes = plt.subplots(4, 2, figsize=(10, 16))
     axes = axes.flatten()
     
     for i, odd_ratio in enumerate(odd_ratios):
