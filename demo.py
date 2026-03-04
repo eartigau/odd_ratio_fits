@@ -78,10 +78,10 @@ def demo_linear_fit_comparison():
     y = y_true + np.random.normal(0, noise_level, n_points)
     yerr = np.ones(n_points) * noise_level
     
-    # Add outliers (10% of data)
-    n_outliers = 100
+    # Add outliers: uniform between -15σ and +15σ (includes ~3σ transition region)
+    n_outliers = 20
     outlier_idx = np.random.choice(n_points, n_outliers, replace=False)
-    y[outlier_idx] = y[outlier_idx] + np.random.choice([-1, 1], n_outliers) * np.random.uniform(5, 15, n_outliers)
+    y[outlier_idx] = y[outlier_idx] + yerr[outlier_idx] * np.random.uniform(-15, 15, n_outliers)
     
     # Standard fit
     a_std, a_std_err, b_std, b_std_err = standard_weighted_linfit(x, y, yerr)
@@ -221,17 +221,17 @@ def demo_weighted_mean():
     print(f"  Mean reported error: {np.mean(naive_errs):.4f}")
     print(f"  Ratio (scatter/error): {naive_scatter/np.mean(naive_errs):.2f}")
     
-    # Create figure with histograms
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    # Create figure with histograms - vertical layout
+    fig, axes = plt.subplots(2, 1, figsize=(10, 10))
     
-    # Left panel: Overlaid histograms of recovered means
+    # Top panel: Overlaid histograms of recovered means
     ax = axes[0]
     
     # Determine common bin range
     all_means = np.concatenate([rob_means, naive_means])
     bin_min = min(all_means.min(), true_value - 4*naive_scatter)
     bin_max = max(all_means.max(), true_value + 4*naive_scatter)
-    bins = np.linspace(bin_min, bin_max, 50)
+    bins = np.linspace(bin_min, bin_max, 100)  # Finer bins
     
     # Plot histograms
     ax.hist(naive_means, bins=bins, density=True, alpha=0.5, color='#E94F37',
@@ -252,7 +252,7 @@ def demo_weighted_mean():
     ax.legend(loc='upper right')
     ax.grid(True, alpha=0.3)
     
-    # Right panel: Comparison bar chart
+    # Bottom panel: Comparison bar chart
     ax = axes[1]
     
     methods = ['Naive\nWeighted Mean', 'Robust\n(ORF)', 'Theory\n(σ/√N)']

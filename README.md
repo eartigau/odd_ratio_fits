@@ -130,10 +130,10 @@ print(f"Robust mean: {mean:.2f} ± {err:.2f}")  # ~10.0, ignoring outliers
 - Compare: naive weighted mean vs ORF robust mean
 - **Expected uncertainty from first principles:** σ/√N = 1/√10000 = 0.01
 
-| Method | Scatter | |Bias| | Scatter/Error Ratio |
-|--------|---------|-------|---------------------|
-| **ORF** | 0.010 | 0.001 | **0.97** ✓ |
-| Naive | 0.065 | 0.005 | **6.5** ✗ |
+| Method    | Scatter | Abs Bias | Scatter/Error Ratio |
+|-----------|---------|----------|---------------------|
+| **ORF**   | 0.010   | 0.001    | **0.97** ✓          |
+| Naive     | 0.065   | 0.005    | **6.5** ✗           |
 
 The ORF method achieves the theoretical σ/√N uncertainty even with 10% outliers, while naive weighted mean has ~6× larger scatter and underestimates uncertainty by the same factor.
 
@@ -166,10 +166,10 @@ print(f"Slope: {b:.3f} ± {b_err:.3f}")
 
 **Simulation setup:**
 - 1,000 points following y = 2 + 0.5x with Gaussian noise (σ = 0.5)
-- 100 outliers (10%) with deviations of ±5 to ±15 from the true line
+- 20 outliers (2%) with deviations uniformly distributed between ±3σ and ±15σ
 - Comparison: standard weighted least squares vs. odd ratio fit
 
-The robust fit (blue) correctly recovers the true line (dashed black) despite strong outliers, while standard weighted least squares (orange) is significantly biased.
+The robust fit (blue) correctly recovers the true line (dashed black) despite outliers, while standard weighted least squares (orange) is biased. Points near ~3σ show the smooth transition in weights.
 
 ![Linear Fit Comparison](plots/linear_fit_comparison.png)
 
