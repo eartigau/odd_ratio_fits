@@ -54,6 +54,9 @@ Traditional outlier rejection methods (e.g., sigma-clipping) use hard thresholds
 1. The threshold is arbitrary
 2. Points near the threshold may be incorrectly classified
 3. Error estimates become biased
+4. **Oscillations in iterative algorithms**: Binary inclusion/rejection can cause points to flip in and out of the fit, preventing convergence
+
+By using continuous weights instead of binary decisions, the odd ratio method allows weights to adjust smoothly at each iteration, avoiding jumps and ensuring stable convergence.
 
 The **odd ratio** approach models each data point as coming from a mixture of two distributions:
 
@@ -152,7 +155,6 @@ The ratio of actual scatter to mean reported error is ~1.0 for both intercept an
 When `odd_ratio_linfit` returns `a = 2.05 ± 0.15`, you can trust that:
 - The true value has ~68% probability of being within [1.90, 2.20]
 - The uncertainty accounts for the down-weighting of outliers
-- Error bars in your plots will be statistically meaningful
 
 ## 📚 API Reference
 

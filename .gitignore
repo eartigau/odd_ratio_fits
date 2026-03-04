@@ -1,6 +1,9 @@
 # Spreadsheet with NIRPS coauthors
 NIRPS coauthors.xlsx
 
+# LaTeX documents (templates for papers)
+docs/*.tex
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

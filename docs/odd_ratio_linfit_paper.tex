@@ -214,6 +214,9 @@ The odd ratio method offers several advantages over traditional sigma-clipping:
           probabilistic interpretation.
     \item \textbf{Smooth weighting}: Points are partially down-weighted rather than
           completely rejected, avoiding discontinuities.
+    \item \textbf{Stable convergence}: Binary inclusion/rejection can cause oscillations
+          in iterative algorithms, where points flip in and out of the fit. Smooth
+          weights adjust gradually at each iteration, ensuring stable convergence.
     \item \textbf{Proper error propagation}: Uncertainties account for the effective
           sample size reduction.
     \item \textbf{Heteroscedastic handling}: Different measurement uncertainties are

@@ -762,8 +762,8 @@ def demo_uncertainty_validation():
     print(f"  Intercept: mean={np.mean(a_normalized):.3f}, std={np.std(a_normalized):.3f}")
     print(f"  Slope:     mean={np.mean(b_normalized):.3f}, std={np.std(b_normalized):.3f}")
     
-    # Create figure
-    fig, axes = plt.subplots(2, 3, figsize=(15, 9))
+    # Create figure (2x2: histograms and normalized residuals)
+    fig, axes = plt.subplots(2, 2, figsize=(12, 9))
     
     # Top row: intercept
     ax = axes[0, 0]
@@ -788,18 +788,6 @@ def demo_uncertainty_validation():
     ax.legend()
     ax.grid(True, alpha=0.3)
     
-    ax = axes[0, 2]
-    # Scatter plot: reported error vs actual deviation
-    ax.scatter(a_errors, np.abs(a_values - true_a), alpha=0.3, s=20, color='#2E86AB')
-    max_val = max(a_errors.max(), np.abs(a_values - true_a).max())
-    ax.plot([0, max_val], [0, max_val], 'r--', lw=2, label='1:1 line')
-    ax.set_xlabel('Reported Error σ_a')
-    ax.set_ylabel('|a - a_true|')
-    ax.set_title('Reported vs Actual Errors (Intercept)')
-    ax.legend()
-    ax.grid(True, alpha=0.3)
-    ax.set_aspect('equal')
-    
     # Bottom row: slope
     ax = axes[1, 0]
     ax.hist(b_values, bins=40, density=True, alpha=0.7, color='#28A745', edgecolor='black')
@@ -820,17 +808,6 @@ def demo_uncertainty_validation():
     ax.set_title(f'Normalized Slope Residuals\nstd = {np.std(b_normalized):.3f}')
     ax.legend()
     ax.grid(True, alpha=0.3)
-    
-    ax = axes[1, 2]
-    ax.scatter(b_errors, np.abs(b_values - true_b), alpha=0.3, s=20, color='#28A745')
-    max_val = max(b_errors.max(), np.abs(b_values - true_b).max())
-    ax.plot([0, max_val], [0, max_val], 'r--', lw=2, label='1:1 line')
-    ax.set_xlabel('Reported Error σ_b')
-    ax.set_ylabel('|b - b_true|')
-    ax.set_title('Reported vs Actual Errors (Slope)')
-    ax.legend()
-    ax.grid(True, alpha=0.3)
-    ax.set_aspect('equal')
     
     plt.suptitle(f'Monte Carlo Validation: {n_realizations} realizations, {int(outlier_fraction*100)}% outliers',
                  fontsize=14, y=1.02)
