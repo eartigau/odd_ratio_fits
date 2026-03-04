@@ -11,6 +11,7 @@ This package implements a robust fitting algorithm that extends the odd ratio we
 
 - **Robust to outliers**: Automatically identifies and down-weights outlier measurements
 - **Proper error propagation**: Returns meaningful uncertainties on fit parameters
+- **Handles heteroscedastic data**: Correctly accounts for varying uncertainties across data points
 - **No manual sigma-clipping**: Uses a probabilistic mixture model instead of arbitrary thresholds
 - **Fast convergence**: Typically converges in 3-5 iterations
 - **Flexible**: Works with linear fits, weighted means, and polynomial regression
@@ -110,6 +111,48 @@ The method extends naturally to polynomial regression:
 The algorithm typically converges within 3-5 iterations:
 
 ![Convergence](plots/convergence.png)
+
+## 🎯 Proper Handling of Heteroscedastic Uncertainties
+
+A key advantage of this method is its **correct treatment of heteroscedastic (varying) uncertainties**. Outliers are identified based on their deviation in units of their own uncertainty (σ), not absolute deviation.
+
+### Why This Matters
+
+Consider two points with the same absolute deviation from the fit:
+- **Point A**: Small error bar (σ = 0.3), deviates by 3 units → **10σ outlier** → heavily down-weighted
+- **Point B**: Large error bar (σ = 2.0), deviates by 3 units → **1.5σ** → normal scatter, kept
+
+This is the correct statistical behavior: a measurement with large uncertainty that happens to be far from the fit is not necessarily an outlier—it may simply reflect its larger measurement error.
+
+![Heteroscedastic Handling](plots/heteroscedastic.png)
+
+The left panel shows data with varying error bar sizes. The point with small error bars that deviates significantly (red annotation) gets a low weight, while the point with large error bars (blue annotation) is kept despite having similar absolute deviation—because in terms of σ, it's consistent with normal scatter.
+
+## 📈 Statistically Valid Uncertainties
+
+The uncertainties returned by `odd_ratio_linfit` are **statistically meaningful** and properly calibrated. This is verified through Monte Carlo simulations.
+
+### Monte Carlo Validation
+
+We performed 1000 realizations of linear fitting with 10% outliers:
+
+![Uncertainty Validation](plots/uncertainty_validation.png)
+
+**Key findings:**
+- The **actual scatter** in recovered parameters matches the **reported uncertainties**
+- Normalized residuals $(p - p_{\rm true})/\sigma_p$ follow a standard normal distribution N(0,1)
+- This confirms that the reported errors correctly describe the statistical uncertainty
+
+![Uncertainty Summary](plots/uncertainty_summary.png)
+
+The ratio of actual scatter to mean reported error is ~1.0 for both intercept and slope, validating that the uncertainties are neither over- nor under-estimated.
+
+### What This Means for Your Analysis
+
+When `odd_ratio_linfit` returns `a = 2.05 ± 0.15`, you can trust that:
+- The true value has ~68% probability of being within [1.90, 2.20]
+- The uncertainty accounts for the down-weighting of outliers
+- Error bars in your plots will be statistically meaningful
 
 ## 📚 API Reference
 

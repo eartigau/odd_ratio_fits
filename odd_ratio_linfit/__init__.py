@@ -15,7 +15,7 @@ Reference:
 from .core import odd_ratio_linfit, odd_ratio_mean, odd_ratio_polyfit
 
 __version__ = "1.0.0"
-__author__ = "Étienne Artigau"
+__author__ = "Étienne Artigau, Neil J. Cook, Charles Cadieux, Atanas K. Stefanov, René Doyon"
 __email__ = "etienne.artigau@umontreal.ca"
 
 __all__ = ["odd_ratio_linfit", "odd_ratio_mean", "odd_ratio_polyfit", "__version__"]

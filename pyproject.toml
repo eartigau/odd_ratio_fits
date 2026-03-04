@@ -9,7 +9,11 @@ description = "Robust linear regression using a Gaussian mixture model for outli
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Étienne Artigau", email = "etienne.artigau@umontreal.ca"}
+    {name = "Étienne Artigau", email = "etienne.artigau@umontreal.ca"},
+    {name = "Neil J. Cook", email = "neil.cook@umontreal.ca"},
+    {name = "Charles Cadieux", email = "charles.cadieux@unige.ch"},
+    {name = "Atanas K. Stefanov", email = "atanas.stefanov@iac.es"},
+    {name = "René Doyon", email = "rene.doyon@umontreal.ca"}
 ]
 maintainers = [
     {name = "Étienne Artigau", email = "etienne.artigau@umontreal.ca"}

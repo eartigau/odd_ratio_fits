@@ -1,0 +1,287 @@
+% =============================================================================
+% Odd Ratio Linear Fit - Comprehensive LaTeX Document for Papers
+% =============================================================================
+% This document provides a complete description of the odd ratio linear fit
+% method, suitable for inclusion in the Methods section of scientific papers.
+%
+% Reference: Artigau et al. (2022), AJ, 164, 84, Appendix A
+% Implementation: https://github.com/eartigau/odd_ratio_linfit
+% 
+% Authors: Artigau, Cook, Cadieux, Stefanov (Atanas K.), Doyon
+% =============================================================================
+
+\documentclass[twocolumn]{aastex631}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Robust Linear Fitting with the Odd Ratio Mixture Model}
+
+\author{\'Etienne Artigau}
+\affiliation{D\'epartement de Physique, Universit\'e de Montr\'eal, Montr\'eal, QC H3C 3J7, Canada}
+\affiliation{Institut de Recherche sur les Exoplan\`etes (iREx)}
+
+\author{Neil J. Cook}
+\affiliation{D\'epartement de Physique, Universit\'e de Montr\'eal, Montr\'eal, QC H3C 3J7, Canada}
+\affiliation{Institut de Recherche sur les Exoplan\`etes (iREx)}
+
+\author{Charles Cadieux}
+\affiliation{D\'epartement de Physique, Universit\'e de Montr\'eal, Montr\'eal, QC H3C 3J7, Canada}
+\affiliation{Institut de Recherche sur les Exoplan\`etes (iREx)}
+
+\author{Atanas K. Stefanov}
+\affiliation{Instituto de Astrof\'isica de Canarias, E-38205 La Laguna, Tenerife, Spain}
+
+\author{Ren\'e Doyon}
+\affiliation{D\'epartement de Physique, Universit\'e de Montr\'eal, Montr\'eal, QC H3C 3J7, Canada}
+\affiliation{Institut de Recherche sur les Exoplan\`etes (iREx)}
+
+
+\begin{abstract}
+We present a robust linear fitting algorithm based on a Gaussian mixture model
+approach for outlier rejection. The method extends the odd ratio weighted mean
+introduced in Appendix A of \citet{Artigau2022} to linear and polynomial
+regression. Unlike traditional sigma-clipping, this approach uses a probabilistic
+model to iteratively down-weight outliers while preserving proper statistical
+uncertainties. The algorithm correctly handles heteroscedastic data, identifying
+outliers based on their deviation in units of their own uncertainty rather than
+absolute value. Monte Carlo simulations confirm that the returned uncertainties
+are statistically valid. The method is implemented in the open-source Python
+package \texttt{odd\_ratio\_linfit}.
+\end{abstract}
+
+\keywords{methods: statistical --- techniques: radial velocities --- methods: data analysis}
+
+
+% =============================================================================
+\section{Introduction}
+\label{sec:intro}
+% =============================================================================
+
+Robust fitting in the presence of outliers is a common challenge in astronomical
+data analysis. Traditional approaches such as sigma-clipping use hard thresholds
+to reject data points that deviate significantly from the model. However, this
+approach has several drawbacks: (1) the threshold is arbitrary, (2) points near
+the threshold may be incorrectly classified, and (3) the resulting error estimates
+become biased due to the sample truncation.
+
+We present an alternative approach based on a Gaussian mixture model, extending
+the odd ratio weighted mean method introduced in Appendix A of \citet{Artigau2022}
+to linear and polynomial regression. This method treats outlier identification as
+a probabilistic inference problem, allowing points to be smoothly down-weighted
+rather than hard-rejected.
+
+
+% =============================================================================
+\section{Method}
+\label{sec:method}
+% =============================================================================
+
+\subsection{Mixture Model Formulation}
+\label{sec:mixture}
+
+Consider fitting a linear model $y = a + bx$ to data $\{x_i, y_i, \sigma_i\}_{i=1}^N$,
+where $\sigma_i$ is the measurement uncertainty on $y_i$. We model each data point
+as arising from a two-component mixture distribution:
+\begin{equation}
+    P(y_i | x_i, a, b) = (1-f_0) \cdot \mathcal{N}(y_i | a+bx_i, \sigma_i) + f_0 \cdot P_{\mathrm{out}}
+    \label{eq:mixture}
+\end{equation}
+where $\mathcal{N}(\cdot|\mu,\sigma)$ denotes a Gaussian distribution with mean $\mu$
+and standard deviation $\sigma$, $f_0$ is the prior probability that any given point
+is an outlier, and $P_{\mathrm{out}}$ represents the outlier distribution, assumed to
+be uniform and broad.
+
+Given this mixture model, the posterior probability that point $i$ with residual
+$r_i = y_i - (a + bx_i)$ is a valid (non-outlier) measurement is:
+\begin{equation}
+    p_{\mathrm{valid},i} = \frac{(1-f_0) \exp\left(-r_i^2/2\sigma_i^2\right)}
+        {(1-f_0) \exp\left(-r_i^2/2\sigma_i^2\right) + f_0}
+    \label{eq:pvalid}
+\end{equation}
+
+Equivalently, the probability that point $i$ is an outlier is:
+\begin{equation}
+    p_{\mathrm{out},i} = \frac{f_0}{(1-f_0) \exp\left(-r_i^2/2\sigma_i^2\right) + f_0}
+    \label{eq:pout}
+\end{equation}
+
+The default value $f_0 = 2 \times 10^{-4}$ implies that roughly 1 in 5000 points is
+expected to be an outlier \emph{a priori}. This value provides a good balance between
+robustness and sensitivity for typical astronomical datasets. Points deviating by
+$\gtrsim 3.5\sigma$ from the model are significantly down-weighted.
+
+
+\subsection{Iterative Fitting Algorithm}
+\label{sec:algorithm}
+
+The fitting proceeds via an iterative expectation-maximization-like procedure:
+
+\begin{enumerate}
+    \item \textbf{Initialization}: Perform standard weighted least squares with
+          weights $w_i = 1/\sigma_i^2$ to obtain initial estimates $\hat{a}$, $\hat{b}$.
+    
+    \item \textbf{E-step}: Compute $p_{\mathrm{valid},i}$ for each point using
+          Equation~\ref{eq:pvalid} with current parameter estimates.
+    
+    \item \textbf{M-step}: Update the model parameters using weighted least squares
+          with weights $w_i = p_{\mathrm{valid},i}/\sigma_i^2$:
+          \begin{align}
+              \hat{b} &= \frac{\sum_i w_i (x_i-\bar{x})(y_i-\bar{y})}{\sum_i w_i (x_i-\bar{x})^2} \\
+              \hat{a} &= \bar{y} - \hat{b}\bar{x}
+          \end{align}
+          where $\bar{x} = \sum_i w_i x_i / \sum_i w_i$ and similarly for $\bar{y}$.
+    
+    \item \textbf{Convergence check}: If the relative change in parameters is below
+          a threshold (default: $10^{-2}$ times the parameter uncertainty), stop;
+          otherwise return to step 2.
+\end{enumerate}
+
+The algorithm typically converges in 3--5 iterations.
+
+
+\subsection{Uncertainty Estimation}
+\label{sec:errors}
+
+Parameter uncertainties are derived from the weighted covariance matrix:
+\begin{align}
+    \sigma_a^2 &= \frac{\sum_i w_i x_i^2}{\Delta} \\
+    \sigma_b^2 &= \frac{\sum_i w_i}{\Delta}
+    \label{eq:errors}
+\end{align}
+where $\Delta = (\sum_i w_i)(\sum_i w_i x_i^2) - (\sum_i w_i x_i)^2$, and the weights
+$w_i = p_{\mathrm{valid},i}/\sigma_i^2$ incorporate the probability that each point
+is valid.
+
+This formulation ensures that the uncertainties properly account for the effective
+reduction in sample size due to down-weighting of outliers.
+
+
+% =============================================================================
+\section{Key Properties}
+\label{sec:properties}
+% =============================================================================
+
+\subsection{Proper Handling of Heteroscedastic Data}
+\label{sec:heteroscedastic}
+
+A crucial advantage of this method is its correct treatment of heteroscedastic
+(varying) uncertainties. Outliers are identified based on their deviation in units
+of their own uncertainty ($\sigma$), not absolute deviation.
+
+Consider two points with the same absolute deviation from the fit:
+\begin{itemize}
+    \item Point A with small uncertainty $\sigma_A = 0.3$ and deviation $|r_A| = 3$:
+          This is a $10\sigma$ outlier, heavily down-weighted.
+    \item Point B with large uncertainty $\sigma_B = 2.0$ and deviation $|r_B| = 3$:
+          This is only a $1.5\sigma$ deviation, consistent with normal scatter, retained
+          with high weight.
+\end{itemize}
+
+This is the statistically correct behavior: a measurement with large uncertainty that
+happens to deviate from the fit is not necessarily an outlier---it may simply reflect
+its larger measurement error.
+
+
+\subsection{Statistically Valid Uncertainties}
+\label{sec:validation}
+
+The uncertainties returned by the algorithm are statistically meaningful and properly
+calibrated. This is verified through Monte Carlo simulations (Figure~\ref{fig:mc}).
+
+For 1000 realizations of linear fitting with 10\% outliers:
+\begin{itemize}
+    \item The actual scatter in recovered parameters matches the mean reported
+          uncertainties (ratio $\approx 1.0$).
+    \item Normalized residuals $(p - p_{\mathrm{true}})/\sigma_p$ follow a standard
+          normal distribution $\mathcal{N}(0,1)$.
+\end{itemize}
+
+This confirms that the reported errors correctly describe the statistical uncertainty.
+
+
+\subsection{Advantages over Sigma-Clipping}
+\label{sec:advantages}
+
+The odd ratio method offers several advantages over traditional sigma-clipping:
+
+\begin{enumerate}
+    \item \textbf{No arbitrary thresholds}: The single parameter $f_0$ has a clear
+          probabilistic interpretation.
+    \item \textbf{Smooth weighting}: Points are partially down-weighted rather than
+          completely rejected, avoiding discontinuities.
+    \item \textbf{Proper error propagation}: Uncertainties account for the effective
+          sample size reduction.
+    \item \textbf{Heteroscedastic handling}: Different measurement uncertainties are
+          naturally incorporated.
+\end{enumerate}
+
+
+% =============================================================================
+\section{Implementation}
+\label{sec:implementation}
+% =============================================================================
+
+The method is implemented in the open-source Python package \texttt{odd\_ratio\_linfit},
+available at \url{https://github.com/eartigau/odd_ratio_linfit}. The package provides
+three main functions:
+
+\begin{itemize}
+    \item \texttt{odd\_ratio\_linfit}: Robust linear regression $y = a + bx$
+    \item \texttt{odd\_ratio\_mean}: Robust weighted mean
+    \item \texttt{odd\_ratio\_polyfit}: Robust polynomial regression
+\end{itemize}
+
+Basic usage:
+\begin{verbatim}
+from odd_ratio_linfit import odd_ratio_linfit
+
+a, a_err, b, b_err = odd_ratio_linfit(x, y, yerr)
+\end{verbatim}
+
+The package depends only on NumPy and is compatible with Python 3.8+.
+
+
+% =============================================================================
+\section{Limitations}
+\label{sec:limitations}
+% =============================================================================
+
+The method assumes:
+\begin{itemize}
+    \item Outliers are rare ($\lesssim 20$--30\% of data)
+    \item Valid measurements follow Gaussian errors
+    \item The linear (or polynomial) model is appropriate
+\end{itemize}
+
+If outliers dominate the dataset, the algorithm may fail to converge to the correct
+solution. In such cases, more robust initialization or a higher $f_0$ value may help.
+
+
+% =============================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% =============================================================================
+
+We have presented a robust linear fitting method based on a Gaussian mixture model
+for outlier rejection. The method correctly handles heteroscedastic data, provides
+statistically valid uncertainties, and offers several advantages over traditional
+sigma-clipping approaches. The implementation is available as an open-source Python
+package for use by the astronomical community.
+
+
+\acknowledgments
+
+This work was supported by the Institut de Recherche sur les Exoplan\`etes (iREx).
+
+
+\begin{thebibliography}{99}
+\bibitem[Artigau et al.(2022)]{Artigau2022}
+Artigau, \'E., Cadieux, C., Cook, N.~J., et al.\ 2022, \aj, 164, 84
+\end{thebibliography}
+
+\end{document}
