@@ -1,11 +1,13 @@
-# Odd Ratio Linear Fit
+# Odd Ratio Fits
+
+### Robust Weighted Averages, Linear Fits, and Higher-Order Polynomial Fits
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Robust linear regression using a Gaussian mixture model for outlier rejection.**
+**Robust fitting using a Gaussian mixture model for outlier rejection.**
 
-This package implements a robust fitting algorithm that extends the odd ratio weighted mean method from Appendix A of [Artigau et al. (2022)](https://ui.adsabs.harvard.edu/abs/2022AJ....164...84A) to linear regression. The algorithm iteratively down-weights data points that are likely to be outliers while preserving proper statistical uncertainties.
+This package implements robust fitting algorithms based on the odd ratio weighted mean method from Appendix A of [Artigau et al. (2022)](https://ui.adsabs.harvard.edu/abs/2022AJ....164...84A). The algorithm iteratively down-weights data points that are likely to be outliers while preserving proper statistical uncertainties.
 
 ## 🚀 Key Features
 
@@ -14,7 +16,7 @@ This package implements a robust fitting algorithm that extends the odd ratio we
 - **Handles heteroscedastic data**: Correctly accounts for varying uncertainties across data points
 - **No manual sigma-clipping**: Uses a probabilistic mixture model instead of arbitrary thresholds
 - **Fast convergence**: Typically converges in 3-5 iterations
-- **Flexible**: Works with weighted means and linear fits
+- **Flexible**: Works with weighted averages, linear fits, and polynomial fits
 
 ## 📦 Installation
 
@@ -392,7 +394,7 @@ If you use this software in your research, please cite both the code and the ori
 @software{odd_ratio_linfit,
   author       = {Artigau, {\'E}tienne and Cook, Neil J. and Cadieux, Charles and
                   Stefanov, Atanas K. and Doyon, Ren{\'e}},
-  title        = {odd\_ratio\_linfit: Robust linear fitting with mixture model weighting},
+  title        = {odd\_ratio\_linfit: Robust fitting with mixture model weighting},
   year         = 2026,
   url          = {https://github.com/eartigau/odd_ratio_linfit}
 }

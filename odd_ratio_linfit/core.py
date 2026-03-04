@@ -1,5 +1,5 @@
 """
-Core implementation of odd ratio linear fit and weighted mean.
+Core implementation of odd ratio fits: weighted mean, linear, and polynomial.
 
 This module provides robust statistical methods using a Gaussian mixture model
 approach to down-weight outliers while preserving the statistical properties

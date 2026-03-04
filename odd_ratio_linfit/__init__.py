@@ -1,5 +1,5 @@
 """
-Odd Ratio Linear Fit - Robust linear regression using a mixture model.
+Odd Ratio Fits - Robust fitting using a mixture model.
 
 This package implements a robust linear fitting algorithm based on a Gaussian
 mixture model approach, extending the odd_ratio_mean method from Artigau et al.

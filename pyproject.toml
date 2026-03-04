@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "odd_ratio_linfit"
 version = "1.0.0"
-description = "Robust linear regression using a Gaussian mixture model for outlier rejection"
+description = "Robust fitting (averages, linear, polynomial) using a Gaussian mixture model for outlier rejection"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [

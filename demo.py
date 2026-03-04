@@ -855,7 +855,7 @@ def demo_uncertainty_validation():
 def main():
     """Run all demonstrations."""
     print("\n" + "=" * 60)
-    print("ODD RATIO LINEAR FIT - DEMONSTRATION")
+    print("ODD RATIO FITS - DEMONSTRATION")
     print("=" * 60)
     print(f"\nPlots will be saved to: {PLOT_DIR.absolute()}\n")
     
